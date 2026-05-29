@@ -32,6 +32,45 @@ async def ingest_document(
     return {"queued": False, "chunk_ids": chunk_ids, "chunks_indexed": len(chunk_ids)}
 
 
+@router.post("/upload", response_model=DocumentRead)
+async def upload_document(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    doc_repo: DocumentRepository = Depends(get_document_repository),
+) -> DocumentRead:
+    # Ensure storage directory exists
+    storage_dir = Path("storage/documents")
+    storage_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Save file
+    file_id = str(uuid.uuid4())
+    file_path = storage_dir / f"{file_id}_{file.filename}"
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
+    
+    # Create DB record
+    doc = await doc_repo.create(
+        user_id=current_user.id,
+        filename=file.filename,
+        content_type=file.content_type or "application/octet-stream",
+        storage_path=str(file_path),
+    )
+    
+    # Trigger background task
+    process_document_task.delay(doc.id)
+    
+    return DocumentRead.model_validate(doc)
+
+
+@router.get("/documents", response_model=list[DocumentRead])
+async def list_documents(
+    current_user: User = Depends(get_current_user),
+    doc_repo: DocumentRepository = Depends(get_document_repository),
+) -> list[DocumentRead]:
+    docs = await doc_repo.list_by_user(current_user.id)
+    return [DocumentRead.model_validate(doc) for doc in docs]
+
+
 @router.post("/query", response_model=QueryResponse)
 async def query_rag(
     payload: QueryRequest,

@@ -8,8 +8,15 @@ from app.core.config import Settings, get_settings
 from app.core.logging import get_logger
 from app.core.security import decode_access_token
 from app.db.models.user import User
+from app.db.repositories.conversation_repository import ConversationRepository
+from app.db.repositories.document_repository import DocumentRepository
 from app.db.repositories.user_repository import UserRepository
 from app.db.session import DatabaseSessionManager
+from app.modules.agents.agent_manager import AgentManager
+from app.modules.agents.implementations.rag_agent import RAGAgent
+from app.modules.agents.implementations.sql_agent import SQLAgent
+from app.modules.agents.implementations.weather_agent import WeatherAgent
+from app.modules.agents.orchestrator import Orchestrator
 from app.modules.rag.pipeline import RAGPipeline
 from app.providers.cache import get_cache_provider
 from app.providers.database import BaseDatabaseProvider, get_database_provider
@@ -45,6 +52,8 @@ class ServiceContainer:
     llm: BaseLLMProvider | None = None
     queue: BaseQueueProvider | None = None
     rag_pipeline: RAGPipeline | None = None
+    agent_manager: AgentManager | None = None
+    orchestrator: Orchestrator | None = None
     component_states: dict[str, DependencyState] = field(default_factory=dict)
 
     async def close(self) -> None:
@@ -121,12 +130,22 @@ async def build_service_container(settings: Settings) -> ServiceContainer:
             raise
 
     rag_pipeline = None
+    agent_manager = AgentManager()
+    orchestrator = None
+    
     if vectorstore is not None and llm is not None:
         rag_pipeline = RAGPipeline(
             embeddings=embeddings,
             vectorstore=vectorstore,
             llm=llm,
         )
+        agent_manager.register(RAGAgent(rag_pipeline))
+        orchestrator = Orchestrator(agent_manager, llm)
+
+    if db_provider is not None:
+        agent_manager.register(SQLAgent(db_provider))
+    
+    agent_manager.register(WeatherAgent())
 
     return ServiceContainer(
         settings=settings,
@@ -138,6 +157,8 @@ async def build_service_container(settings: Settings) -> ServiceContainer:
         queue=queue,
         embeddings=embeddings,
         rag_pipeline=rag_pipeline,
+        agent_manager=agent_manager,
+        orchestrator=orchestrator,
         component_states=component_states,
     )
 
@@ -167,6 +188,18 @@ async def get_auth_service(
     settings: Settings = Depends(get_settings_dependency),
 ) -> AuthService:
     return AuthService(UserRepository(session), settings)
+
+
+async def get_document_repository(
+    session: AsyncSession = Depends(get_db_session),
+) -> DocumentRepository:
+    return DocumentRepository(session)
+
+
+async def get_conversation_repository(
+    session: AsyncSession = Depends(get_db_session),
+) -> ConversationRepository:
+    return ConversationRepository(session)
 
 
 async def get_current_user(
@@ -199,3 +232,25 @@ async def get_rag_pipeline(
             detail="RAG dependencies are unavailable",
         )
     return container.rag_pipeline
+
+
+async def get_agent_manager(
+    container: ServiceContainer = Depends(get_container),
+) -> AgentManager:
+    if container.agent_manager is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Agent Manager is unavailable",
+        )
+    return container.agent_manager
+
+
+async def get_orchestrator(
+    container: ServiceContainer = Depends(get_container),
+) -> Orchestrator:
+    if container.orchestrator is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Orchestrator is unavailable",
+        )
+    return container.orchestrator

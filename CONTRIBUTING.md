@@ -1,155 +1,73 @@
-# Contributing
+# Contributing to FastAPI RAG
 
-Thanks for contributing to `fastapi-rag`.
+First off, thank you for considering contributing to **FastAPI RAG**! It’s people like you who make the AI developer ecosystem a better place.
 
-This repository is a **template generator**, not a single backend application. Contributions should improve one of these areas:
+This project is an **Enterprise Template Generator**. Contributions should aim to improve the quality, security, and scalability of the generated backends.
 
-- generator behavior
-- template quality
-- provider architecture
-- developer experience
-- documentation
-- test coverage
+---
 
-## Repository Model
+## 🏗️ Repository Architecture
 
-The repository has two main responsibilities:
+Understanding the boundary between the **Generator** and the **Scaffold** is key:
 
-1. generate a backend project
-2. define the backend project template
+*   **The Generator (`src/fastapi_rag/`):** The CLI and rendering logic that builds the project.
+*   **The Template (`src/fastapi_rag/templates/full_rag/`):** The actual FastAPI code that users receive.
 
-Where things live:
+> **Note:** If you want to improve the RAG pipeline or Agent logic, you should primarily edit the files in the `templates/` directory.
 
-- generator code: `src/fastapi_rag/cli.py` and `src/fastapi_rag/generator/`
-- generated project scaffold: `src/fastapi_rag/template/`
-- generator tests: `tests/`
+---
 
-If you want to change the backend that users receive, edit files under:
+## 📜 Principles & Standards
 
-- `src/fastapi_rag/template/`
+We maintain a high bar for "Production-Grade" code. Please adhere to these principles:
 
-If you want to change prompts, rendering, or CLI behavior, edit files under:
+1.  **Real Implementations:** No placeholders. If a feature is added, it must be functional (e.g., real JWT, real SQL repositories).
+2.  **Provider Abstraction:** Never tie business logic to a specific vendor. Always use the `providers/` interface.
+3.  **Async-First:** All IO-bound operations (DB, LLM, Cache) must use `async/await`.
+4.  **Security by Default:** Always follow OWASP best practices for FastAPI.
 
-- `src/fastapi_rag/generator/`
+---
 
-## Principles
+## 🛠️ Development Workflow
 
-Please keep these principles in mind:
-
-- prefer real implementations over placeholder scaffolding
-- keep the architecture modular
-- avoid vendor lock-in in business-facing layers
-- protect separation between generator logic and generated app logic
-- keep docs aligned with actual behavior
-
-## Good Contribution Areas
-
-High-value contributions include:
-
-- new provider implementations
-- better rendering behavior
-- richer generator tests
-- stronger generated-project defaults
-- improved RAG behavior
-- observability improvements
-- packaging fixes
-- onboarding documentation improvements
-
-## Local Development
-
-Install in editable mode:
-
+### 1. Environment Setup
 ```bash
-pip install -e .
+git clone https://github.com/example/fastapi-rag.git
+cd fastapi-rag
+pip install -e .[dev]
 ```
 
-Run tests:
-
+### 2. Testing the Generator
 ```bash
 pytest
 ```
 
-If you want to manually inspect the generator:
+### 3. Testing the Scaffold
+To test changes to the generated code:
+1. Generate a project: `fastapi-rag new test_app`
+2. Enter the project: `cd test_app`
+3. Run the scaffold's tests: `pytest` or `docker compose up --build`
 
-```bash
-fastapi-rag new myapp
-```
+---
 
-That will render a backend project into `./myapp`.
+## 🤝 Pull Request Process
 
-Then you can test the generated backend separately:
+1.  **Issue First:** For major changes, please open an issue first to discuss the architectural impact.
+2.  **Atomic Commits:** Use [Conventional Commits](https://www.conventionalcommits.org/) (e.g., `feat:`, `fix:`, `docs:`).
+3.  **Update Docs:** If you change template variables or provider logic, update `ARCHITECTURE.md` and `README.md`.
+4.  **Quality Check:** Ensure all tests pass and your code follows the established linting patterns.
 
-```bash
-cd myapp
-docker compose up --build
-```
+---
 
-## Development Rules
+## 💡 Contribution Ideas
 
-### Generator rules
+*   **New Providers:** Add support for Anthropic, Weaviate, or Azure AI Search.
+*   **Advanced Agents:** Implement "Researcher" or "Code Interpreter" agents in the scaffold.
+*   **DevOps:** Improve Helm charts or add Terraform modules to the `deployment/` folder.
+*   **Observability:** Add deeper OpenTelemetry spans for RAG retrieval steps.
 
-- keep rendering deterministic
-- keep template variables explicit
-- do not hardcode project-specific values in generated files
-- avoid mixing CLI prompt logic with file rendering logic
+---
 
-### Template rules
+## 📄 License
 
-- routes should stay thin
-- business logic belongs in services or modules
-- provider-specific code belongs in provider folders
-- generated code should be production-minded, not tutorial-grade
-
-### Documentation rules
-
-If you change:
-
-- template variables
-- provider support
-- CLI prompts
-- generated file layout
-- runtime behavior in the scaffold
-
-then update the relevant docs too.
-
-## Testing Expectations
-
-At minimum, contributions should preserve:
-
-- generator render correctness
-- CLI generation flow
-- template file presence
-
-If you add generator behavior, add or update tests in:
-
-- `tests/`
-
-If you change the generated backend structure significantly, also consider whether the template’s internal test suite under:
-
-- `src/fastapi_rag/template/tests/`
-
-should be updated.
-
-## Pull Request Checklist
-
-Before opening a PR:
-
-1. run `pytest`
-2. confirm the generator still renders a valid project tree
-3. update docs if behavior changed
-4. keep changes focused
-5. avoid leaving partial scaffolding behind
-
-## What To Avoid
-
-Please avoid:
-
-- adding abstractions with no real use
-- bypassing provider interfaces for convenience
-- turning the repo back into a single concrete backend app at the root
-- mixing unrelated refactors with targeted fixes
-- adding docs that overclaim unsupported runtime behavior
-
-## License
-
-By contributing, you agree that your contributions will be distributed under the same repository license.
+By contributing, you agree that your contributions will be licensed under the project's [MIT License](LICENSE).

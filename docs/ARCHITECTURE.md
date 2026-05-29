@@ -1,328 +1,78 @@
-# Architecture Guide
+# Architecture Guide: FastAPI RAG
 
-This document explains how the template is structured and why the architecture is organized this way.
+This document provides a technical deep-dive into the design philosophy, layering, and patterns used in the **FastAPI RAG** ecosystem. It is intended for architects and lead developers who need to extend or audit the system.
 
-It is written for senior developers, leads, and contributors who need to understand the design decisions behind the template.
+---
 
-## Architectural Goals
+## 🏛️ Architectural Goals
 
-The template is optimized for these goals:
+The system is engineered to solve the "Day 1" problem of AI development: moving from a prototype to a production-ready infrastructure.
 
-- async-first application flow
-- clear separation of concerns
-- provider abstraction across infrastructure and AI integrations
-- low-friction local development
-- production-friendly observability
-- easy extension by small teams
+1.  **Async-First Core:** Leverages Python's `asyncio` for non-blocking IO across Database, LLM, and Vector stores.
+2.  **Strict Separation of Concerns:** Logic is isolated into layers to prevent the "Fat Controller" anti-pattern.
+3.  **Provider-Interface Pattern:** Application logic depends on abstract interfaces, ensuring no vendor lock-in.
+4.  **Operational Maturity:** Built-in support for Prometheus metrics, structured logging, and health checks.
 
-This project is intentionally not organized as a monolith with route handlers doing everything.
+---
 
-## High-Level Layers
+## 🏗️ High-Level Layers
 
-The application is organized into these layers:
+### 1. API Layer (`app/api/`)
+*   **Role:** Entry points, request validation (Pydantic), and response shaping.
+*   **Rule:** Routes must stay thin. They should only orchestrate services or modules.
 
-### API layer
+### 2. Module Layer (`app/modules/`)
+*   **Role:** High-level domain workflows that coordinate multiple services and providers.
+*   **Key Modules:** 
+    *   `RAG Module`: Handles chunking, embedding, and retrieval.
+    *   `Agent Module`: Manages the registry and execution of specialized AI agents.
 
-Location:
+### 3. Service Layer (`app/services/`)
+*   **Role:** Fine-grained business logic (e.g., Auth, Chunking, Parsing).
+*   **Rule:** Reusable components that don't belong in a specific module.
 
-- `app/api/`
+### 4. Provider Layer (`app/providers/`)
+*   **Role:** Infrastructure adapters. This is the only place where vendor-specific SDKs (e.g., Qdrant, OpenAI) are allowed.
+*   **Pattern:** Each provider family has a `BaseInterface` and a `Factory`.
 
-Responsibilities:
+### 5. Persistence Layer (`app/db/`)
+*   **Role:** SQLAlchemy models and the **Repository Pattern** for clean data access.
 
-- define HTTP endpoints
-- validate requests
-- call dependencies and services
-- return structured responses
+---
 
-Routes should remain thin.
+## 🤖 AI & Agentic Design
 
-### Core layer
+### The Agent Registry
+The system uses a centralized `AgentManager` that allows for "Easy-Add" agent registration.
+*   **BaseAgent:** An abstract interface ensuring consistent execution.
+*   **Specialized Agents:** Pre-built implementations for SQL-querying, RAG-retrieval, and Tool-calling.
 
-Location:
+### Async Ingestion Pipeline
+To handle large documents (PDFs) without blocking the API, we use a decoupled ingestion flow:
+1.  **API:** Receives file, saves to storage, and creates a `Document` record in `PENDING` state.
+2.  **Celery Worker:** Picks up the task, parses the file, chunks text, generates embeddings, and indexes into the Vector Store.
+3.  **Status Tracking:** The `Document` model allows the frontend to poll for processing progress.
 
-- `app/core/`
+---
 
-Responsibilities:
+## 📊 Observability & DevOps
 
-- settings and environment configuration
-- security helpers
-- middleware
-- exception handling
-- service container wiring
+*   **Logging:** Structured JSON logs via `structlog` or standard logging with JSON formatting.
+*   **Metrics:** `/metrics` endpoint serving Prometheus-compatible data for API latency, error rates, and task completion.
+*   **Tracing:** Optional OpenTelemetry wiring for distributed tracing across services.
+*   **Docker:** Multi-stage `Dockerfile` and a comprehensive `docker-compose` for local development.
 
-This layer owns cross-cutting runtime behavior.
+---
 
-### Persistence layer
+## 🛠️ Extension Guidelines
 
-Location:
+1.  **Adding a Provider:** Implement the `BaseProvider` interface and update the factory.
+2.  **Adding an Agent:** Inherit from `BaseAgent` and register it in the DI container.
+3.  **Modifying RAG logic:** Edit `app/modules/rag/pipeline.py`.
+4.  **Adding Background Tasks:** Define the task in `app/workers/tasks/` and ensure it is async-compatible.
 
-- `app/db/`
+---
 
-Responsibilities:
+## 📄 License
 
-- ORM models
-- repositories
-- DB session management
-- migrations
-
-This layer should not contain business workflows.
-
-### Service layer
-
-Location:
-
-- `app/services/`
-
-Responsibilities:
-
-- reusable business logic
-- orchestration of repositories and providers at a smaller scope
-
-Use services when the logic is business-specific but not broad enough to be a full module.
-
-### Module layer
-
-Location:
-
-- `app/modules/`
-
-Responsibilities:
-
-- higher-order workflows
-- multi-step orchestration
-- feature subsystems such as RAG
-
-Modules are appropriate when multiple services or providers interact in one flow.
-
-### Provider layer
-
-Location:
-
-- `app/providers/`
-
-Responsibilities:
-
-- infrastructure adapters
-- third-party integrations
-- swappable implementations hidden behind stable interfaces
-
-This is the main mechanism used to avoid vendor lock-in.
-
-## Provider Strategy
-
-The template includes provider groups for:
-
-- database
-- cache
-- queues
-- llm
-- vectorstores
-
-Each group follows the same basic pattern:
-
-1. a base abstract interface
-2. one or more implementations
-3. a factory that selects the provider from config
-
-This is important because it keeps application logic stable while infrastructure choices change.
-
-Example:
-
-- the RAG pipeline depends on a vector store interface
-- it does not depend on Qdrant-specific code
-
-That means switching from Qdrant to PgVector should not require rewriting the pipeline.
-
-## Dependency Container
-
-The service container is built in:
-
-- [app/core/dependencies.py](/home/iqbal-ai/Downloads/industry_ai_backend_template/src/fastapi_rag/template/app/core/dependencies.py)
-
-This container creates and holds runtime dependencies such as:
-
-- DB provider
-- cache service
-- vector store provider
-- LLM provider
-- queue provider
-- RAG pipeline
-
-The container is attached to `app.state` during application startup.
-
-## Startup Philosophy
-
-The template uses lifespan startup in:
-
-- [app/main.py](/home/iqbal-ai/Downloads/industry_ai_backend_template/src/fastapi_rag/template/app/main.py)
-
-Startup is dependency-aware:
-
-- external systems are initialized during startup
-- readiness state is tracked
-- the application can optionally remain alive even if a dependency is unavailable
-
-This allows `/live` and `/ready` to be operationally meaningful.
-
-## RAG Architecture
-
-The RAG pipeline lives in:
-
-- [app/modules/rag/pipeline.py](/home/iqbal-ai/Downloads/industry_ai_backend_template/src/fastapi_rag/template/app/modules/rag/pipeline.py)
-
-Current flow:
-
-1. chunk document
-2. embed chunks
-3. insert chunk vectors into the selected vector store
-4. retrieve top matches for a query
-5. build a prompt
-6. call the selected LLM provider
-7. return answer plus retrieval matches
-
-This architecture is intentionally modular so teams can improve each step independently.
-
-Extension points:
-
-- chunking
-- embedding model
-- retrieval strategy
-- metadata filtering
-- reranking
-- prompt templates
-- generation provider
-
-## Authentication Architecture
-
-Auth is intentionally simple and production-oriented:
-
-- register
-- login
-- JWT access token
-- protected route dependency
-
-Key files:
-
-- `app/api/v1/auth.py`
-- `app/core/security.py`
-- `app/services/auth.py`
-
-The current setup is a strong base for future additions such as:
-
-- refresh tokens
-- RBAC
-- organization membership
-- API keys
-
-## Observability Architecture
-
-The observability layer includes:
-
-- JSON logs
-- request IDs
-- exception logging
-- Prometheus metrics
-- optional OpenTelemetry tracing
-
-Key files:
-
-- `app/core/logging.py`
-- `app/core/middleware.py`
-- `app/observability/metrics.py`
-- `app/observability/tracing.py`
-
-This is intended to give teams an operational baseline from day one.
-
-## Database Strategy
-
-For relational persistence, the template uses:
-
-- SQLAlchemy 2 async
-- repositories
-- Alembic migrations
-
-This provides:
-
-- clean persistence boundaries
-- easy testing
-- controlled schema changes
-
-MongoDB settings are reserved for future persistence-layer expansion, but MongoDB is not currently a drop-in runtime replacement for the SQLAlchemy-backed auth and repository model.
-
-## Why Repositories Exist
-
-Repositories are used to centralize persistence queries.
-
-Benefits:
-
-- route handlers stay clean
-- services do not duplicate query logic
-- testing becomes easier
-- future schema changes are easier to control
-
-Without repositories, query logic tends to leak everywhere.
-
-## Why Services and Modules Both Exist
-
-This separation is deliberate.
-
-Use a service when:
-
-- the logic is focused
-- it supports one business concern
-
-Use a module when:
-
-- the flow spans multiple providers or services
-- the process has several coordinated steps
-
-This prevents the service layer from turning into a dump of unrelated orchestration logic.
-
-## Docker Philosophy
-
-The local Docker stack is designed to give a working enterprise-style development environment quickly.
-
-The default stack starts:
-
-- FastAPI
-- PostgreSQL
-- Redis
-- Qdrant
-- Celery worker
-
-This is the template’s opinionated happy path for local development.
-
-Provider abstraction still allows the application logic to evolve away from those defaults later.
-
-## Current Tradeoffs
-
-This template is intentionally pragmatic.
-
-It chooses:
-
-- a strong default stack
-- clear extension points
-- moderate complexity
-
-It does not try to solve every enterprise concern immediately.
-
-Still likely needed for some production systems:
-
-- RBAC
-- tenant isolation
-- rate limiting
-- audit logging
-- deployment manifests
-- secret management integration
-
-## How To Extend Safely
-
-If you extend the template:
-
-1. preserve layer boundaries
-2. add provider logic only in provider folders
-3. keep routes thin
-4. keep business rules in services or modules
-5. update docs when architecture changes
-
-That keeps the project coherent as it grows.
+This architectural design is part of the FastAPI RAG project and is licensed under the [MIT License](../LICENSE).

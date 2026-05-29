@@ -13,6 +13,7 @@ httpx==0.28.1
 qdrant-client==1.14.2
 chromadb==0.5.23
 pinecone==5.4.2
+pypdf==5.1.0
 motor==3.7.1
 alembic==1.16.1
 prometheus-client==0.21.1

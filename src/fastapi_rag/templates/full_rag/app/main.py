@@ -7,6 +7,8 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from app.api.v1.auth import router as auth_router
 from app.api.v1.health import router as health_router
 from app.api.v1.rag import router as rag_router
+from app.api.v1.agents import router as agents_router
+from app.api.v1.chat import router as chat_router
 from app.core.config import get_settings
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import configure_logging, get_logger
@@ -51,9 +53,12 @@ register_exception_handlers(app)
 app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(rag_router)
+app.include_router(agents_router)
+app.include_router(chat_router)
 app.include_router(metrics_router)
 
 
 @app.get("/")
 async def root() -> dict[str, str]:
     return {"message": f"{settings.project_name} running"}
+ect_name} running"}
