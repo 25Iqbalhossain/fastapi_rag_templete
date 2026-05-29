@@ -1,15 +1,15 @@
 name: CI
 
 on:
-push:
-branches: ["main"]
-pull_request:
-branches: ["main"]
+  push:
+    branches: ["main"]
+    pull_request:
+    branches: ["main"]
 
 jobs:
-test-and-build:
-runs-on: ubuntu-latest
-
+  test-and-build:
+    runs-on: ubuntu-latest
+   
 
 strategy:
   matrix:
@@ -35,7 +35,6 @@ steps:
 
   - name: Build package
     run: |
-      rm -rf dist build *.egg-info
       python -m build
 
   - name: Validate distributions
