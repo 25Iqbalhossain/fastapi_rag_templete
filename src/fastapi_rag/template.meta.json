@@ -1,0 +1,14 @@
+{
+  "name": "fastapi-rag",
+  "description": "Enterprise AI backend template generator",
+  "variables": [
+    "project_name",
+    "package_name",
+    "llm_provider",
+    "vector_db",
+    "database_provider",
+    "cache_provider",
+    "queue_provider",
+    "secret_key"
+  ]
+}

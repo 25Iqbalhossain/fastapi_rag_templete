@@ -1,0 +1,4 @@
+include README.md
+include LICENSE
+include src/fastapi_rag/template.meta.json
+recursive-include src/fastapi_rag/templates/full_rag *

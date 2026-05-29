@@ -1,0 +1,10 @@
+{
+  "name": "industry_ai_backend",
+  "description": "Industry-level AI backend template",
+  "variables": [
+    "project_name",
+    "llm_provider",
+    "vector_db",
+    "secret_key"
+  ]
+}
