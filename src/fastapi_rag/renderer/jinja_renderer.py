@@ -1,6 +1,7 @@
+import sys
 from pathlib import Path
 
-from jinja2 import Environment
+from jinja2 import Environment, TemplateSyntaxError
 
 
 TEXT_EXTENSIONS = {
@@ -22,8 +23,14 @@ TEXT_FILENAMES = {"Dockerfile", ".env.example", "LICENSE", "README.md", "alembic
 def render_file(path: Path, context: dict[str, str]) -> None:
     if not _is_text_file(path):
         return
-    template = Environment(autoescape=False).from_string(path.read_text(encoding="utf-8"))
-    path.write_text(template.render(**context), encoding="utf-8")
+    try:
+        template = Environment(autoescape=False).from_string(path.read_text(encoding="utf-8"))
+        path.write_text(template.render(**context), encoding="utf-8")
+    except TemplateSyntaxError as e:
+        print(f"Error rendering template: {path}", file=sys.stderr)
+        print(f"Line number: {e.lineno}", file=sys.stderr)
+        print(f"Message: {e.message}", file=sys.stderr)
+        raise e
 
 
 def render_directory(directory: Path, context: dict[str, str]) -> None:

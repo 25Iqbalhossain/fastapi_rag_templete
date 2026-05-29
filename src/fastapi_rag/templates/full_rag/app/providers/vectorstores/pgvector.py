@@ -28,7 +28,7 @@ class PGVectorProvider(BaseVectorStore):
                     CREATE TABLE IF NOT EXISTS {self.table_name} (
                         id TEXT PRIMARY KEY,
                         content TEXT NOT NULL,
-                        metadata JSONB NOT NULL DEFAULT '{{}}',
+                        metadata JSONB NOT NULL DEFAULT '{}',
                         embedding vector({self.settings.embedding_dimensions}) NOT NULL
                     )
                     """

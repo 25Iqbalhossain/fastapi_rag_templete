@@ -1,3 +1,4 @@
+from typing import Annotated, Optional
 from pathlib import Path
 from secrets import token_urlsafe
 
@@ -20,11 +21,24 @@ DATABASE_PROVIDERS = ("postgresql", "mysql")
 CACHE_PROVIDERS = ("redis", "dragonfly")
 
 
+@app.callback()
+def callback() -> None:
+    """
+    Enterprise AI backend template generator for FastAPI and RAG systems.
+    """
+    pass
+
+
 @app.command("new")
-def new(project_name: str) -> None:
+def new(
+    project_name: Annotated[
+        Optional[str],
+        typer.Argument(help="Project name (will prompt if not provided)")
+    ] = None,
+) -> None:
     """Generate a new backend project from the full_rag template."""
     console.print("[bold cyan]fastapi-rag[/bold cyan] project generator")
-    final_project_name = Prompt.ask("Project name", default=project_name).strip()
+    final_project_name = Prompt.ask("Project name", default=project_name or "my-rag-backend").strip()
     package_name = final_project_name.lower().replace("-", "_").replace(" ", "_")
     llm_provider = _prompt_choice("LLM provider", LLM_PROVIDERS, default="echo")
     vector_db = _prompt_choice("Vector DB", VECTOR_PROVIDERS, default="qdrant")
@@ -60,3 +74,7 @@ def _prompt_choice(label: str, choices: tuple[str, ...], default: str) -> str:
     if value not in choices:
         raise typer.BadParameter(f"Unsupported value '{value}' for {label}")
     return value
+
+
+if __name__ == "__main__":
+    app()
