@@ -1,13 +1,13 @@
 Metadata-Version: 2.4
 Name: fastapi-rag
-Version: 0.1.0
-Summary: Enterprise AI backend template generator for FastAPI and RAG systems
-Author: Open Source Contributors
+Version: 0.1.1
+Summary: CLI tool for generating production-ready FastAPI RAG backend templates
+Author: Iqbal Hossain
 License: MIT
-Project-URL: Homepage, https://test.pypi.org/project/fastapi-rag/
-Project-URL: Documentation, https://test.pypi.org/project/fastapi-rag/
-Project-URL: Source, https://github.com/example/fastapi-rag
-Project-URL: Issues, https://github.com/example/fastapi-rag/issues
+Project-URL: Homepage, https://github.com/25Iqbalhossain/fastapi_rag_templete
+Project-URL: Documentation, https://github.com/25Iqbalhossain/fastapi_rag_templete#readme
+Project-URL: Repository, https://github.com/25Iqbalhossain/fastapi_rag_templete
+Project-URL: Issues, https://github.com/25Iqbalhossain/fastapi_rag_templete/issues
 Keywords: fastapi,rag,template,generator,ai,backend,cli
 Classifier: Development Status :: 4 - Beta
 Classifier: Intended Audience :: Developers
@@ -29,228 +29,109 @@ Requires-Dist: build>=1.2; extra == "dev"
 Requires-Dist: twine>=5.0; extra == "dev"
 Dynamic: license-file
 
-# fastapi-rag
+# FastAPI RAG: Enterprise AI Backend Generator
 
-`fastapi-rag` is an installable Python CLI that generates production-grade FastAPI backends for AI applications, RAG systems, internal copilots, and enterprise SaaS platforms.
+[![PyPI version](https://img.shields.io/pypi/v/fastapi-rag.svg)](https://pypi.org/project/fastapi-rag/)
+[![Python versions](https://img.shields.io/pypi/pyversions/fastapi-rag.svg)](https://pypi.org/project/fastapi-rag/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://github.com/example/fastapi-rag/actions/workflows/ci.yml/badge.svg)](https://github.com/example/fastapi-rag/actions)
 
-It is intended to behave like a real developer tool, not a local scaffold script.
+**FastAPI RAG** is a sophisticated CLI tool designed to scaffold production-grade AI backends. Instead of assembly-required boilerplates, it generates a complete, modular ecosystem for RAG (Retrieval-Augmented Generation) applications, specialized AI agents, and high-performance SaaS platforms.
 
-## What It Does
+---
 
-After installation:
+## 🌟 Why FastAPI RAG?
 
-```bash
-fastapi-rag new myapp
-cd myapp
-docker compose up --build
-```
+In the era of AI, the backend is more than just an API—it's an orchestrator. This tool generates a foundation that handles the complex "plumbing" of AI systems so you can focus on your domain logic.
 
-The generated project includes:
+*   **Intelligent Orchestration:** Advanced LLM-based routing and agent selection logic.
+*   **Stateful AI Interactions:** Built-in persistence for multi-turn chat and conversation history.
+*   **Production-Ready RAG:** Async document ingestion, status tracking, and background processing.
+*   **Infrastructure Agnostic:** Pre-configured with swappable providers for LLMs, Vector DBs, and Caches.
 
-- FastAPI application structure
-- JWT authentication
-- SQLAlchemy async setup
-- provider abstractions for DB, cache, queue, LLM, and vector stores
-- RAG ingestion and query pipeline
-- Redis and Celery integration
-- Docker Compose startup
-- health endpoints, metrics, and observability wiring
-- tests and developer docs
+---
 
-## Repository Structure
+## 🚀 Quick Start
 
-```text
-src/fastapi_rag/
-├── cli/
-│   └── main.py
-├── generators/
-│   └── project_generator.py
-├── renderer/
-│   └── jinja_renderer.py
-├── templates/
-│   └── full_rag/
-└── utils/
-    └── package_resources.py
-```
+Generate your enterprise-grade backend in seconds:
 
-## Installation
-
-### Local development install
-
-```bash
-pip install -e .
-```
-
-### Package build
-
-```bash
-python -m build
-```
-
-This generates:
-
-- wheel in `dist/*.whl`
-- source distribution in `dist/*.tar.gz`
-
-### Install after publishing
-
+### 1. Installation
 ```bash
 pip install fastapi-rag
 ```
 
-## Quick Start
-
-Generate a new backend:
-
+### 2. Generate Project
 ```bash
-fastapi-rag new myapp
+fastapi-rag new my-ai-platform
 ```
+The CLI will guide you through selecting your preferred stack (OpenAI vs. Ollama, Qdrant vs. PgVector, etc.).
 
-The CLI will ask for:
-
-1. project name
-2. LLM provider
-3. vector database
-4. database provider
-5. cache provider
-
-Then it will:
-
-1. load the packaged template
-2. copy it into `./myapp`
-3. render all Jinja variables
-4. output a complete backend project
-
-Run the generated project:
-
+### 3. Launch Development Stack
 ```bash
-cd myapp
+cd my-ai-platform
 docker compose up --build
 ```
+Your backend is now live at `http://localhost:8000` with full RAG and Agent capabilities.
 
-## Supported Provider Defaults
+---
 
-The packaged template currently supports or models:
+## 📦 What's Included in the Box?
 
-- LLM: `echo`, `openai`, `ollama`
-- Vector DB: `qdrant`, `chroma`, `pgvector`, `pinecone`
-- Database: `postgresql`, `mysql`
-- Cache: `redis`, `dragonfly`
-- Queue: `celery`
+The generated project is a fully-functional ecosystem:
 
-## Architecture Overview
+*   **Security:** JWT-based authentication with secure password hashing.
+*   **AI Pipelines:**
+    *   **Async Ingestion:** PDF/Text upload with background parsing and vector indexing.
+    *   **Agentic Framework:** Modular registry for specialized AI agents (SQL, RAG, Web Search).
+*   **Persistence:** Async SQLAlchemy 2.0 with the Repository pattern.
+*   **Observability:** Integrated Prometheus metrics and JSON logging.
+*   **Infrastructure:** Celery + Redis for background workflows and Qdrant for vector search.
 
-The generated backend uses a modular architecture with:
+---
 
-- `app/api/`
-- `app/core/`
-- `app/db/`
-- `app/modules/`
-- `app/providers/`
-- `app/services/`
-- `app/workers/`
+## 🗺️ Roadmap & Supported Providers
 
-The generator itself is separated from the scaffold so packaging and runtime template access stay reliable after installation.
+| Category | Supported / Modeled Providers |
+| :--- | :--- |
+| **LLMs** | OpenAI, Ollama, Anthropic (Planned), Echo (Local Testing) |
+| **Vector DBs** | Qdrant, Chroma, PgVector, Pinecone |
+| **Databases** | PostgreSQL, MySQL |
+| **Caching** | Redis, Dragonfly |
+| **Queues** | Celery |
 
-## Package-Safe Template Loading
+---
 
-Templates are loaded with `importlib.resources`, not fragile relative paths.
+## 🛠️ Repository Development
 
-That means `fastapi-rag` can work after:
-
-- `pip install -e .`
-- `pip install fastapi-rag`
-- wheel installation
-- source distribution installation
-
-## Development Workflow
-
-Install local dependencies:
-
+### Local Setup
 ```bash
+git clone https://github.com/example/fastapi-rag.git
+cd fastapi-rag
 pip install -e .[dev]
 ```
 
-Run tests:
-
+### Testing
 ```bash
 pytest
 ```
 
-Build distributions:
-
+### Build Distribution
 ```bash
 python -m build
 ```
 
-Validate package metadata:
+---
 
-```bash
-twine check dist/*
-```
+## 📚 Documentation
 
-## CI and Release Automation
+*   [**Architecture Overview**](docs/ARCHITECTURE.md) - Deep dive into the generator and scaffold design.
+*   [**User Guide**](docs/USER_GUIDE.md) - How to use the CLI and customize templates.
+*   [**First Feature Tutorial**](docs/FIRST_FEATURE.md) - Step-by-step guide to adding your first business rule.
+*   [**Publishing Guide**](docs/PUBLISHING.md) - How to build and distribute the package.
+*   [**Contributing**](CONTRIBUTING.md) - Our standards for pull requests and code style.
 
-This repository includes GitHub Actions workflows for:
+---
 
-- CI test and build verification
-- version and release automation
-- TestPyPI publishing
-- PyPI publishing
+## 📄 License
 
-Workflows:
-
-- `.github/workflows/ci.yml`
-- `.github/workflows/release-please.yml`
-- `.github/workflows/publish-testpypi.yml`
-- `.github/workflows/publish-pypi.yml`
-
-## Publishing
-
-### Build locally
-
-```bash
-python -m build
-```
-
-### Upload to TestPyPI
-
-```bash
-twine upload --repository testpypi dist/*
-```
-
-### Install from TestPyPI
-
-```bash
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple fastapi-rag
-```
-
-## Versioning
-
-This repository is configured for conventional commits and release-please.
-
-Expected examples:
-
-- `feat: add anthropic provider prompt option`
-- `fix: include templates in sdist build`
-- `docs: improve publishing guide`
-
-Release automation updates:
-
-- version in `pyproject.toml`
-- release PR
-- git tag
-- GitHub release
-- changelog
-
-## Documentation
-
-- [docs/ARCHITECTURE.md](/home/iqbal-ai/Downloads/industry_ai_backend_template/docs/ARCHITECTURE.md)
-- [docs/USER_GUIDE.md](/home/iqbal-ai/Downloads/industry_ai_backend_template/docs/USER_GUIDE.md)
-- [docs/FIRST_FEATURE.md](/home/iqbal-ai/Downloads/industry_ai_backend_template/docs/FIRST_FEATURE.md)
-- [docs/PUBLISHING.md](/home/iqbal-ai/Downloads/industry_ai_backend_template/docs/PUBLISHING.md)
-- [CONTRIBUTING.md](/home/iqbal-ai/Downloads/industry_ai_backend_template/CONTRIBUTING.md)
-
-## License
-
-This project is released under the [MIT License](/home/iqbal-ai/Downloads/industry_ai_backend_template/LICENSE).
+This project is released under the [MIT License](LICENSE).

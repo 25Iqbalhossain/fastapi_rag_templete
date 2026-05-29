@@ -1,49 +1,62 @@
 name: CI
 
 on:
-  push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
+push:
+branches: ["main"]
+pull_request:
+branches: ["main"]
 
 jobs:
-  test-and-build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.11", "3.12"]
+test-and-build:
+runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+```
+strategy:
+  matrix:
+    python-version: ["3.11", "3.12"]
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
+steps:
+  - name: Checkout
+    uses: actions/checkout@v4
 
-      - name: Install package and dev dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e .[dev]
+  - name: Set up Python
+    uses: actions/setup-python@v5
+    with:
+      python-version: ${{ matrix.python-version }}
 
-      - name: Run tests
-        run: pytest
+  - name: Install package and dev dependencies
+    run: |
+      python -m pip install --upgrade pip
+      pip install -e .[dev]
 
-      - name: Build package
-        run: python -m build
+  - name: Run tests
+    run: |
+      pytest -v
 
-      - name: Validate distributions
-        run: twine check dist/*
+  - name: Build package
+    run: |
+      python -m build
 
-      - name: Smoke test installed CLI from built wheel
-        run: |
-          python -m venv .venv-smoke
-          . .venv-smoke/bin/activate
-          pip install --upgrade pip
-          pip install dist/*.whl
-          mkdir smoke-run
-          cd smoke-run
-          printf 'demo\necho\nqdrant\npostgresql\nredis\n' | fastapi-rag new demo
-          test -f demo/docker-compose.yml
-          test -f demo/app/main.py
+  - name: Validate distributions
+    run: |
+      twine check dist/*
+
+  - name: Smoke test installed CLI from built wheel
+    run: |
+      rm -rf .venv-smoke smoke-run
+
+      python -m venv .venv-smoke
+      . .venv-smoke/bin/activate
+
+      pip install --upgrade pip
+      pip install dist/*.whl
+
+      mkdir -p smoke-run
+      cd smoke-run
+
+      printf 'echo\nqdrant\npostgresql\nredis\n' | fastapi-rag new demo
+
+      test -d demo
+      test -f demo/docker-compose.yml
+      test -f demo/app/main.py
+
