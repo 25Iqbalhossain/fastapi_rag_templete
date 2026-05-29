@@ -9,7 +9,7 @@ runner = CliRunner()
 
 
 def test_cli_new_generates_project(monkeypatch, tmp_path: Path) -> None:
-    answers = iter(["sampleapp", "echo", "qdrant", "postgresql", "redis"])
+    answers = iter(["echo", "qdrant", "postgresql", "redis"])
     monkeypatch.setattr("fastapi_rag.cli.main.Prompt.ask", lambda *args, **kwargs: next(answers))
 
     monkeypatch.chdir(tmp_path)

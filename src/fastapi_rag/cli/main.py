@@ -38,7 +38,12 @@ def new(
 ) -> None:
     """Generate a new backend project from the full_rag template."""
     console.print("[bold cyan]fastapi-rag[/bold cyan] project generator")
-    final_project_name = Prompt.ask("Project name", default=project_name or "my-rag-backend").strip()
+    
+    if project_name:
+        final_project_name = project_name
+    else:
+        final_project_name = Prompt.ask("Project name", default="my-rag-backend").strip()
+    
     package_name = final_project_name.lower().replace("-", "_").replace(" ", "_")
     llm_provider = _prompt_choice("LLM provider", LLM_PROVIDERS, default="echo")
     vector_db = _prompt_choice("Vector DB", VECTOR_PROVIDERS, default="qdrant")
