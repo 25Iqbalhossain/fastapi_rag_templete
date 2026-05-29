@@ -4,56 +4,70 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fastapi-rag"
-version = "0.1.0"
-description = "Enterprise AI backend template generator for FastAPI and RAG systems"
+version = "0.1.1"
+description = "CLI tool for generating production-ready FastAPI RAG backend templates"
 readme = "README.md"
 requires-python = ">=3.11"
-license = {text = "MIT"}
-authors = [{name = "Open Source Contributors"}]
-keywords = ["fastapi", "rag", "template", "generator", "ai", "backend", "cli"]
-classifiers = [
-  "Development Status :: 4 - Beta",
-  "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Topic :: Software Development :: Code Generators",
-  "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+license = { text = "MIT" }
+
+authors = [
+{ name = "Iqbal Hossain" }
 ]
+
+keywords = [
+"fastapi",
+"rag",
+"template",
+"generator",
+"ai",
+"backend",
+"cli"
+]
+
+classifiers = [
+"Development Status :: 4 - Beta",
+"Intended Audience :: Developers",
+"License :: OSI Approved :: MIT License",
+"Programming Language :: Python :: 3",
+"Programming Language :: Python :: 3.11",
+"Programming Language :: Python :: 3.12",
+"Topic :: Software Development :: Code Generators",
+"Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+]
+
 dependencies = [
-  "typer>=0.12,<1.0",
-  "jinja2>=3.1,<4.0",
-  "rich>=13.7,<14.0",
+"typer>=0.12,<1.0",
+"jinja2>=3.1,<4.0",
+"rich>=13.7,<14.0",
 ]
 
 [project.urls]
-Homepage = "https://test.pypi.org/project/fastapi-rag/"
-Documentation = "https://test.pypi.org/project/fastapi-rag/"
-Source = "https://github.com/example/fastapi-rag"
-Issues = "https://github.com/example/fastapi-rag/issues"
+Homepage = "https://github.com/25Iqbalhossain/fastapi_rag_templete"
+Documentation = "https://github.com/25Iqbalhossain/fastapi_rag_templete#readme"
+Repository = "https://github.com/25Iqbalhossain/fastapi_rag_templete"
+Issues = "https://github.com/25Iqbalhossain/fastapi_rag_templete/issues"
 
 [project.optional-dependencies]
 dev = [
-  "pytest>=8.0",
-  "build>=1.2",
-  "twine>=5.0",
+"pytest>=8.0",
+"build>=1.2",
+"twine>=5.0",
 ]
 
 [project.scripts]
 fastapi-rag = "fastapi_rag.cli.main:app"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
 fastapi_rag = [
-  "templates/full_rag/**/*",
-  "templates/full_rag/**/.env.example",
-  "template.meta.json",
+"templates/full_rag/**/*",
+"templates/full_rag/**/.env.example",
+"template.meta.json",
 ]
 
 [tool.pytest.ini_options]
